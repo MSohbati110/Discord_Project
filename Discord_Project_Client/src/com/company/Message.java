@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Message implements Serializable {
     private String owner;
     private String text;
-    private String type; // sign up . sign in . error
+    private String type; // sign up . sign in . error . /friend
     // constructor
     public Message(String owner, String text, String type) {
         this.owner = owner;

@@ -3,12 +3,11 @@ package com.company;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Server {
-    private int port = 6000;
-    private ArrayList<ClientHandler> clients = new ArrayList<>();
+    private final int port = 6000;
+    private HashMap<String,ClientHandler> clients = new HashMap();
     private HashMap<String,String[]> users = new HashMap<>();
     // starting the server
     public void startServer () {
@@ -22,6 +21,11 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    // sending a message to a specific client
+    public void sentTo (String username, Message message) {
+        ClientHandler clientHandler = clients.get(username);
+        clientHandler.sendToClient(message);
     }
     // clientHandler thread
     private class ClientHandler implements Runnable{
@@ -61,7 +65,7 @@ public class Server {
                             sendToClient(new Message("server","username sign up successfully",""));
                             username = message.getOwner();
                             String[] inputs = message.getText().split("-");
-                            clients.add(this);
+                            clients.put(username,this);
                             users.put(username,inputs);
                         }
                     }
@@ -74,9 +78,23 @@ public class Server {
                                 sendToClient(new Message("server","username or password is wrong","error"));
                             }
                             else {
-                                System.out.println("user sign in");
+                                sendToClient(new Message("server","username sign in successfully",""));
+                                username = message.getOwner();
+                                clients.replace(username,this);
                             }
                         }
+                    }
+                    if (message.getType().equals("/friend")) {
+                        if (users.containsKey(message.getText())) {
+                            sendToClient(new Message("server","friend request sent",""));
+                            sentTo(message.getText(),new Message(message.getOwner(),"","/friend"));
+                        }
+                        else {
+                            sendToClient(new Message("server","username doesn't exist","error"));
+                        }
+                    }
+                    if (message.getType().equals("/friendaccept")) {
+                        sentTo(message.getText(),new Message(message.getOwner(),"","/friendaccept"));
                     }
                 } catch (ClassNotFoundException | IOException e) {
 
