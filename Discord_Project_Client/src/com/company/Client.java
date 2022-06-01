@@ -1,11 +1,12 @@
 package com.company;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 public class Client {
     private static final String ANSI_RESET = "\u001B[0m";
@@ -21,6 +22,10 @@ public class Client {
     private int phoneNumber = -1;
     private boolean sign = true;
     private HashMap<String,Boolean> friendsList = new HashMap<>();
+    private HashMap<String, ArrayList<String>> privateChats = new HashMap<>();
+    private boolean isPrivateChat = false;
+    private String privateChatUser = "";
+    private ArrayList<Object> data = new ArrayList<>();
 
     // sign up method
     private void signUp () {
@@ -42,6 +47,21 @@ public class Client {
         System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
         passWord = scanner.nextLine();
     }
+    // saving data in file
+    private void saving () {
+        try {
+            FileOutputStream fout = new FileOutputStream(username+".txt");
+            ObjectOutputStream outf = new ObjectOutputStream(fout);
+            data.add(friendsList);
+            data.add(privateChats);
+            outf.writeObject(data);
+            fout.close();
+            outf.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     // starting the client
     public void startClient () {
         try {
@@ -49,6 +69,7 @@ public class Client {
             Socket socket = new Socket(ip,port);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
             // sign up or sign in
             Scanner scanner = new Scanner(System.in);
             while (sign) {
@@ -69,6 +90,7 @@ public class Client {
                     }
                     if (message.getType().equals("")) {
                         System.out.println(ANSI_BLUE + message.getText() + ANSI_RESET);
+                        saving();
                         sign = false;
                     }
                 }
@@ -89,6 +111,14 @@ public class Client {
                     sign = false;
                 }
             }
+
+            // reading info from file
+            FileInputStream fin = new FileInputStream(username+".txt");
+            ObjectInputStream inf = new ObjectInputStream(fin);
+            data = (ArrayList<Object>) inf.readObject();
+            friendsList = (HashMap<String, Boolean>) data.get(0);
+            privateChats = (HashMap<String, ArrayList<String>>) data.get(1);
+
             // Listener
             Thread thread = new Thread(new Listener(in,socket));
             thread.start();
@@ -125,8 +155,10 @@ public class Client {
                         if (text.split(" ")[0].equals("/friendaccept") && text.split(" ").length == 2) {
                             if (friendsList.containsKey(text.split(" ")[1]) && !friendsList.get(text.split(" ")[1])) {
                                 friendsList.replace(text.split(" ")[1],true);
+                                saving();
                                 out.writeObject(new Message(username,text.split(" ")[1],"/friendaccept"));
                                 System.out.println(ANSI_BLUE + "friend request accepted" + ANSI_RESET);
+
                             }
                             else {
                                 System.out.println(ANSI_RED + "there is no friend request from this username" + ANSI_RESET);
@@ -135,6 +167,7 @@ public class Client {
                         if (text.split(" ")[0].equals("/friendreject") && text.split(" ").length == 2) {
                             if (friendsList.containsKey(text.split(" ")[1]) && !friendsList.get(text.split(" ")[1])) {
                                 friendsList.remove(text.split(" ")[1]);
+                                saving();
                                 System.out.println(ANSI_BLUE + "friend request rejected" + ANSI_RESET);
                             }
                             else {
@@ -153,12 +186,43 @@ public class Client {
                                 System.out.println(ANSI_RED + "you have no friends!" + ANSI_RESET);
                             }
                         }
+                        if (text.split(" ")[0].equals("/chat") && text.split(" ").length == 2) {
+                            if (friendsList.containsKey(text.split(" ")[1])) {// && !privateChatUser.equals(text.split(" ")[1])
+                                isPrivateChat = true;
+                                privateChatUser = text.split(" ")[1];
+                                if (privateChats.containsKey(text.split(" ")[1])) {
+                                    ArrayList<String> chats = privateChats.get(text.split(" ")[1]);
+                                    for (String chat : chats) {
+                                        System.out.println(chat);
+                                    }
+                                }
+                                else {
+                                    privateChats.put(text.split(" ")[1],new ArrayList<>());
+                                    saving();
+                                }
+                                out.writeObject(new Message(username,text.split(" ")[1],"/chat"));
+                            }
+                            else {
+                                System.out.println(ANSI_RED + "you have no friend with this username" + ANSI_RESET);
+                            }
+                        }
+                        if (text.split(" ")[0].equals("/chatoff") && text.split(" ").length == 1) {
+                            isPrivateChat = false;
+                            privateChatUser = "";
+                        }
                     }
-                }catch (StringIndexOutOfBoundsException e) {
+                    else {
+                        if (isPrivateChat) {
+                            ArrayList<String> chats = privateChats.get(privateChatUser);
+                            chats.add("me: " + text);
+                            saving();
+                            out.writeObject(new Message(username,text,"pchat-"+privateChatUser));
+                        }
+                    }
+                }
+                catch (StringIndexOutOfBoundsException e) {
 
                 }
-
-                out.writeObject(new Message(username,text,""));
             }
 
         }
@@ -183,24 +247,43 @@ public class Client {
             while (connection) {
                 try {
                     Message message = (Message) in.readObject();
-                    if (message.getType().equals("/friend")) {
-                        friendsList.put(message.getOwner(),false);
-                    }
                     if (message.getType().equals("error")) {
                         System.out.println(ANSI_RED + message.getText() + ANSI_RESET);
                     }
                     if (message.getType().equals("")) {
                         System.out.println(ANSI_BLUE + message.getText() + ANSI_RESET);
                     }
+                    if (message.getType().equals("/friend")) {
+                        friendsList.put(message.getOwner(),false);
+                        saving();
+                    }
                     if (message.getType().equals("/friendaccept")) {
                         friendsList.put(message.getOwner(),true);
+                        saving();
+                    }
+                    if (message.getType().equals("/chat")) {
+                        if (!privateChats.containsKey(message.getOwner())) {
+                            privateChats.put(message.getOwner(),new ArrayList<>());
+                            saving();
+                        }
+                    }
+                    if (message.getType().equals("pchat")) {
+                        ArrayList<String> chats = privateChats.get(message.getOwner());
+                        chats.add(message.getOwner() + ": " + message.getText());
+                        saving();
+                        if (privateChatUser.equals(message.getOwner())) {
+                            System.out.println(message.getOwner() + ": " + message.getText());
+                        }
                     }
                 }
-                catch (IOException | ClassNotFoundException e) {
+                catch (IOException e) {
                     if (connection) {
                         System.out.println(ANSI_RED + "The server shut down (Enter to close the program)" + ANSI_RESET);
                         connection = false;
                     }
+                }
+                catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
         }
