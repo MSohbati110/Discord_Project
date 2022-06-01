@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 public class Client {
     private static final String ANSI_RESET = "\u001B[0m";
@@ -19,7 +20,7 @@ public class Client {
     private String username = "";
     private String passWord = "";
     private String email = "";
-    private int phoneNumber = -1;
+    private String phoneNumber = "";
     private boolean sign = true;
     private HashMap<String,Boolean> friendsList = new HashMap<>();
     private HashMap<String, ArrayList<String>> privateChats = new HashMap<>();
@@ -29,23 +30,84 @@ public class Client {
 
     // sign up method
     private void signUp () {
+        boolean condition;
         Scanner scanner = new Scanner(System.in);
         System.out.println(ANSI_YELLOW + "Enter your username : " + ANSI_RESET);
-        username = scanner.nextLine();
+        
+        do {
+            username = scanner.nextLine();
+            if (!(Pattern.matches("[a-zA-Z0-9]*", username))) {
+                System.out.println("username should have only these characters : a-z, A-Z, 0-9.");
+                condition = true;
+            } else {
+                condition = false;
+            }
+        } while (condition);
         System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
-        passWord = scanner.nextLine();
+
+        do {
+            passWord = scanner.nextLine();
+            if (passWord.contains(" ") || passWord.length() < 8) {
+                System.out.println("password should be at least 8 characters and don't contains space.");
+                condition = true;
+            } else {
+                condition = false;
+            }
+        } while (condition);
         System.out.println(ANSI_YELLOW + "Enter your email : " + ANSI_RESET);
-        email = scanner.nextLine();
+        
+        do {
+            email = scanner.nextLine();
+            if (!Pattern.matches("^[\\w!#$%&’*+/=?`{|}~^-]+(?:\\.[\\w!#$%&’*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", email)) {
+                System.out.println("invalid email address.");
+                condition = true;
+            } else {
+                condition = false;
+            }
+        } while (condition);
         System.out.println(ANSI_YELLOW + "Enter your phoneNumber : (Enter -1 to pass)" + ANSI_RESET);
-        phoneNumber = scanner.nextInt();
+        
+        do {
+            phoneNumber = scanner.nextLine();
+            if (phoneNumber.equals("-1")) {
+                condition = false;
+            } else if (!Pattern.matches("[0-9]*", phoneNumber)) {
+                System.out.println("phonenumber is invalid");
+                condition = true;
+            } else if (phoneNumber.length() != 11) {
+                System.out.println("phonenumber is invalid");
+                condition = true;
+            } else {
+                condition = false;
+            }
+        } while (condition);
+        scanner.close();
     }
     // sign in method
     private void signIn () {
+        boolean condition;
         Scanner scanner = new Scanner(System.in);
         System.out.println(ANSI_YELLOW + "Enter your username : " + ANSI_RESET);
-        username = scanner.nextLine();
+        do {
+            username = scanner.nextLine();
+            if (!Pattern.matches("[a-zA-Z0-9]", username)) {
+                System.out.println("username should have only these characters : a-z, A-Z, 0-9.");
+                condition = true;
+            } else {
+                condition = false;
+            }
+        } while (condition);
         System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
-        passWord = scanner.nextLine();
+        do {
+            passWord = scanner.nextLine();
+            if (passWord.contains(" ") || passWord.length() < 8) {
+                System.out.println("password should be at least 8 characters and don't contains space.");
+                condition = true;
+            } else {
+                condition = false;
+            }
+        } while (condition);
+        scanner.close();
     }
     // saving data in file
     private void saving () {
@@ -125,7 +187,11 @@ public class Client {
 
             // writer
             while (connection) {
-                String text = scanner.nextLine();
+                String text = "";
+                if (scanner.hasNextLine()) {
+                    text = scanner.nextLine();
+                        
+                }
                 try {
                     if (text.charAt(0) == '/') {
                         if (text.split(" ")[0].equals("/exit")) {
