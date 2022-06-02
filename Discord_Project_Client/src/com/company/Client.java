@@ -37,9 +37,13 @@ public class Client {
         do {
             username = scanner.nextLine();
             if (!(Pattern.matches("[a-zA-Z0-9]*", username))) {
-                System.out.println("username should have only these characters : a-z, A-Z, 0-9.");
+                System.out.println(ANSI_RED + "username should have only these characters : a-z, A-Z, 0-9." + ANSI_RESET);
                 condition = true;
-            } else {
+            } else if (username.length() < 6) {
+                System.out.println(ANSI_RED + "username should have at least 6 characters" + ANSI_RESET);
+                condition = true;
+            }
+            else {
                 condition = false;
             }
         } while (condition);
@@ -48,7 +52,7 @@ public class Client {
         do {
             passWord = scanner.nextLine();
             if (passWord.contains(" ") || passWord.length() < 8) {
-                System.out.println("password should be at least 8 characters and don't contains space.");
+                System.out.println(ANSI_RED + "password should be at least 8 characters and don't contains space." + ANSI_RESET);
                 condition = true;
             } else {
                 condition = false;
@@ -59,7 +63,7 @@ public class Client {
         do {
             email = scanner.nextLine();
             if (!Pattern.matches("^[\\w!#$%&’*+/=?`{|}~^-]+(?:\\.[\\w!#$%&’*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", email)) {
-                System.out.println("invalid email address.");
+                System.out.println(ANSI_RED + "invalid email address." + ANSI_RESET);
                 condition = true;
             } else {
                 condition = false;
@@ -72,12 +76,16 @@ public class Client {
             if (phoneNumber.equals("-1")) {
                 condition = false;
             } else if (!Pattern.matches("[0-9]*", phoneNumber)) {
-                System.out.println("phonenumber is invalid");
+                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
                 condition = true;
             } else if (phoneNumber.length() != 11) {
-                System.out.println("phonenumber is invalid");
+                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
                 condition = true;
-            } else {
+            } else if (!phoneNumber.substring(0,2).equals("09")) {
+                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
+                condition = true;
+            }
+            else {
                 condition = false;
             }
         } while (condition);
@@ -85,29 +93,11 @@ public class Client {
     }
     // sign in method
     private void signIn () {
-        boolean condition;
         Scanner scanner = new Scanner(System.in);
         System.out.println(ANSI_YELLOW + "Enter your username : " + ANSI_RESET);
-        do {
-            username = scanner.nextLine();
-            if (!Pattern.matches("[a-zA-Z0-9]", username)) {
-                System.out.println("username should have only these characters : a-z, A-Z, 0-9.");
-                condition = true;
-            } else {
-                condition = false;
-            }
-        } while (condition);
+        username = scanner.nextLine();
         System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
-        do {
-            passWord = scanner.nextLine();
-            if (passWord.contains(" ") || passWord.length() < 8) {
-                System.out.println("password should be at least 8 characters and don't contains space.");
-                condition = true;
-            } else {
-                condition = false;
-            }
-        } while (condition);
-        scanner.close();
+        passWord = scanner.nextLine();
     }
     // saving data in file
     private void saving () {
