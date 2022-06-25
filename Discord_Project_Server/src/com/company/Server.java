@@ -11,9 +11,14 @@ public class Server implements Serializable{
     private final int port = 6000;
     private HashMap<String,ClientHandler> clients = new HashMap();
     private HashMap<String,String[]> users = new HashMap<>();
+    private HashMap<String,Boolean> online = new HashMap<>();
     private HashMap<String[],Boolean> friendRequest = new HashMap<>();
     private HashMap<String[],Boolean> friendAccept = new HashMap<>();
     private HashMap<ArrayList<String>,ArrayList<String>> privateChats = new HashMap<>();
+    private ArrayList<Group> groups = new ArrayList<>();
+    private int groupId = 0;
+    private HashMap<String,Group> groupJoins = new HashMap<>();
+    private HashMap<String,Message> groupRemoves = new HashMap<>();
     private ArrayList<Object> data = new ArrayList<>();
 
     // starting the server
@@ -28,6 +33,9 @@ public class Server implements Serializable{
             friendRequest = (HashMap<String[], Boolean>) data.get(2);
             friendAccept = (HashMap<String[], Boolean>) data.get(3);
             privateChats = (HashMap<ArrayList<String>, ArrayList<String>>) data.get(4);
+            groups = (ArrayList<Group>) data.get(5);
+            groupJoins = (HashMap<String, Group>) data.get(6);
+            groupRemoves = (HashMap<String, Message>) data.get(7);
             ServerSocket serverSocket = new ServerSocket(port);
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -46,6 +54,10 @@ public class Server implements Serializable{
     private void sendTo (String username, Message message, String type) {
         ClientHandler clientHandler = clients.get(username);
         clientHandler.sendToClient(message,type);
+    }
+    private void gSendTo (String username, Group group, String type) {
+        ClientHandler clientHandler = clients.get(username);
+        clientHandler.gSendToClient(group,type);
     }
     // sending any requests when offline
     private void offlineRequests (String username, ClientHandler clientHandler) {
@@ -75,6 +87,20 @@ public class Server implements Serializable{
                 saving();
             }
         }
+        for (String user : groupJoins.keySet()) {
+            if (user.equals(username)) {
+                clientHandler.gSendToClient(groupJoins.get(user),"groupjoin");
+                groupJoins.remove(user);
+                saving();
+            }
+        }
+        for (String user : groupRemoves.keySet()) {
+            if (user.equals(username)) {
+                clientHandler.sendToClient(groupRemoves.get(user),"groupremove");
+                groupRemoves.remove(user);
+                saving();
+            }
+        }
     }
     // saving data in file
     public void saving () {
@@ -86,6 +112,9 @@ public class Server implements Serializable{
             data.add(friendRequest);
             data.add(friendAccept);
             data.add(privateChats);
+            data.add(groups);
+            data.add(groupJoins);
+            data.add(groupRemoves);
             outf.writeObject(data);
             fout.close();
             outf.close();
@@ -95,7 +124,7 @@ public class Server implements Serializable{
         }
     }
     // clientHandler thread
-    private class ClientHandler implements Runnable,Serializable{
+    public class ClientHandler implements Runnable,Serializable{
         private transient Socket socket;
         private transient ObjectInput in;
         private transient ObjectOutput out;
@@ -140,6 +169,21 @@ public class Server implements Serializable{
                     privateChats.put(users,chats);
                     saving();
                 }
+                if (type.equals("groupremove")) {
+                    groupRemoves.put(username,message);
+                    saving();
+                }
+            }
+        }
+        public synchronized void gSendToClient (Group group, String type) {
+            try {
+                out.writeObject(new Message("server","",type));
+                out.writeObject(group);
+            } catch (IOException e) {
+                if (type.equals("groupjoin")) {
+                    groupJoins.put(username,group);
+                    saving();
+                }
             }
         }
         @Override
@@ -163,6 +207,7 @@ public class Server implements Serializable{
                             String[] inputs = message.getText().split("-");
                             clients.put(username, this);
                             users.put(username, inputs);
+                            online.put(username,true);
                             saving();
                         }
                     }
@@ -177,6 +222,7 @@ public class Server implements Serializable{
                                 username = message.getOwner();
                                 offlineRequests(username, this);
                                 clients.replace(username, this);
+                                online.put(username,true);
                             }
                         }
                     }
@@ -197,10 +243,71 @@ public class Server implements Serializable{
                     if ((message.getType().split("-")[0].equals("pchat"))) {
                         sendTo(message.getType().split("-")[1],new Message(message.getOwner(),message.getText(),"pchat"),"pchat");
                     }
+                    if (message.getType().equals("/newserver")) {
+                        Group group = new Group(message.getOwner());
+                        group.setId(groupId);
+                        group.setName(message.getText());
+                        groups.add(group);
+                        saving();
+                        sendToClient(new Message("server",String.valueOf(groupId),"/newserver"),"/newserver");
+                        groupId++;
+                    }
+                    if (message.getType().equals("/changeservername")) {
+                        groups.get(Integer.parseInt(message.getOwner())).setName(message.getText());
+                        saving();
+                    }
+                    if (message.getType().equals("/addmember")) {
+                        groups.get(Integer.parseInt(message.getText().split("-")[0])).addMember(message.getText().split("-")[1]);
+                        saving();
+                        gSendTo(message.getText().split("-")[1], groups.get(Integer.parseInt(message.getText().split("-")[0])), "groupjoin");
+                    }
+                    if (message.getType().equals("/removemember")) {
+                        Group group = groups.get(Integer.parseInt(message.getText().split("-")[0]));
+                        if (group.isMember(message.getText().split("-")[1])) {
+                            group.removeMember(message.getText().split("-")[1]);
+                            sendTo(message.getText().split("-")[1],new Message(group.getName(),String.valueOf(group.getId()),"groupremove"),"groupremove");
+                        }
+                        else {
+                            sendToClient(new Message("server","there is no such member in this server!","error"),"error");
+                        }
+                    }
+                    if (message.getType().equals("/status")) {
+                        Group group = groups.get(Integer.parseInt(message.getText().split("-")[0]));
+                        if (group.isMember(message.getText().split("-")[1])) {
+                            if (online.containsKey(message.getText().split("-")[1])) {
+                                sendToClient(new Message("server","Online",""),"");
+                            }
+                            else {
+                                sendToClient(new Message("server","Offline","error"),"error");
+                            }
+                        }
+                        else {
+                            sendToClient(new Message("server","there is no such member in this server!","error"),"error");
+                        }
+                    }
+                    if (message.getType().equals("/server")) {
+                        boolean bool = false;
+                        for (Group group : groups) {
+                            if (group.getName().equals(message.getText())) {
+                                if (group.isMember(message.getOwner())) {
+                                    sendToClient(new Message("server",String.valueOf(group.getId()),"/server"),"/server");
+                                }
+                                else {
+                                    sendToClient(new Message("server","you have no such server!","error"),"error");
+                                }
+                                bool = true;
+                            }
+                        }
+                        if (!bool) {
+                            sendToClient(new Message("server","you have no such server!","error"),"error");
+                        }
+                    }
+
                 }
             }
             catch (ClassNotFoundException | IOException e) {
                     try {
+                        online.remove(username);
                         socket.close();
                     } catch (IOException ex) {
                         ex.printStackTrace();

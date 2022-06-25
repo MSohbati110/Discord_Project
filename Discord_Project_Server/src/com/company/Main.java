@@ -4,7 +4,7 @@ public class Main {
 
     public static void main(String[] args) {
         Server server = new Server();
-//        server.saving();
+        server.saving();
         server.startServer();
     }
 }
