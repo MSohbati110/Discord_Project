@@ -2,12 +2,12 @@ package com.company;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
-import java.util.concurrent.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Client {
     private static final String ANSI_RESET = "\u001B[0m";
@@ -26,70 +26,83 @@ public class Client {
     private HashMap<String, ArrayList<String>> privateChats = new HashMap<>();
     private boolean isPrivateChat = false;
     private String privateChatUser = "";
+    private HashMap<Integer,Boolean> groups = new HashMap<>();
+    private boolean isGroup = false;
+    private int theGroup = -1;
     private ArrayList<Object> data = new ArrayList<>();
 
     // sign up method
+//    private void signUp () {
+//        boolean condition;
+//        Scanner scanner = new Scanner(System.in);
+//        System.out.println(ANSI_YELLOW + "Enter your username : " + ANSI_RESET);
+//
+//        do {
+//            username = scanner.nextLine();
+//            if (!(Pattern.matches("[a-zA-Z0-9]*", username))) {
+//                System.out.println(ANSI_RED + "username should have only these characters : a-z, A-Z, 0-9." + ANSI_RESET);
+//                condition = true;
+//            } else if (username.length() < 6) {
+//                System.out.println(ANSI_RED + "username should have at least 6 characters" + ANSI_RESET);
+//                condition = true;
+//            }
+//            else {
+//                condition = false;
+//            }
+//        } while (condition);
+//        System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
+//
+//        do {
+//            passWord = scanner.nextLine();
+//            if (passWord.contains(" ") || passWord.length() < 8) {
+//                System.out.println(ANSI_RED + "password should be at least 8 characters and don't contains space." + ANSI_RESET);
+//                condition = true;
+//            } else {
+//                condition = false;
+//            }
+//        } while (condition);
+//        System.out.println(ANSI_YELLOW + "Enter your email : " + ANSI_RESET);
+//
+//        do {
+//            email = scanner.nextLine();
+//            if (!Pattern.matches("^[\\w!#$%&’*+/=?`{|}~^-]+(?:\\.[\\w!#$%&’*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", email)) {
+//                System.out.println(ANSI_RED + "invalid email address." + ANSI_RESET);
+//                condition = true;
+//            } else {
+//                condition = false;
+//            }
+//        } while (condition);
+//        System.out.println(ANSI_YELLOW + "Enter your phoneNumber : (Enter -1 to pass)" + ANSI_RESET);
+//
+//        do {
+//            phoneNumber = scanner.nextLine();
+//            if (phoneNumber.equals("-1")) {
+//                condition = false;
+//            } else if (!Pattern.matches("[0-9]*", phoneNumber)) {
+//                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
+//                condition = true;
+//            } else if (phoneNumber.length() != 11) {
+//                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
+//                condition = true;
+//            } else if (!phoneNumber.substring(0,2).equals("09")) {
+//                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
+//                condition = true;
+//            }
+//            else {
+//                condition = false;
+//            }
+//        } while (condition);
+//    }
     private void signUp () {
-        boolean condition;
         Scanner scanner = new Scanner(System.in);
         System.out.println(ANSI_YELLOW + "Enter your username : " + ANSI_RESET);
-        
-        do {
-            username = scanner.nextLine();
-            if (!(Pattern.matches("[a-zA-Z0-9]*", username))) {
-                System.out.println(ANSI_RED + "username should have only these characters : a-z, A-Z, 0-9." + ANSI_RESET);
-                condition = true;
-            } else if (username.length() < 6) {
-                System.out.println(ANSI_RED + "username should have at least 6 characters" + ANSI_RESET);
-                condition = true;
-            }
-            else {
-                condition = false;
-            }
-        } while (condition);
+        username = scanner.nextLine();
         System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
-
-        do {
-            passWord = scanner.nextLine();
-            if (passWord.contains(" ") || passWord.length() < 8) {
-                System.out.println(ANSI_RED + "password should be at least 8 characters and don't contains space." + ANSI_RESET);
-                condition = true;
-            } else {
-                condition = false;
-            }
-        } while (condition);
+        passWord = scanner.nextLine();
         System.out.println(ANSI_YELLOW + "Enter your email : " + ANSI_RESET);
-        
-        do {
-            email = scanner.nextLine();
-            if (!Pattern.matches("^[\\w!#$%&’*+/=?`{|}~^-]+(?:\\.[\\w!#$%&’*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", email)) {
-                System.out.println(ANSI_RED + "invalid email address." + ANSI_RESET);
-                condition = true;
-            } else {
-                condition = false;
-            }
-        } while (condition);
+        email = scanner.nextLine();
         System.out.println(ANSI_YELLOW + "Enter your phoneNumber : (Enter -1 to pass)" + ANSI_RESET);
-        
-        do {
-            phoneNumber = scanner.nextLine();
-            if (phoneNumber.equals("-1")) {
-                condition = false;
-            } else if (!Pattern.matches("[0-9]*", phoneNumber)) {
-                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
-                condition = true;
-            } else if (phoneNumber.length() != 11) {
-                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
-                condition = true;
-            } else if (!phoneNumber.substring(0,2).equals("09")) {
-                System.out.println(ANSI_RED + "phonenumber is invalid" + ANSI_RESET);
-                condition = true;
-            }
-            else {
-                condition = false;
-            }
-        } while (condition);
-        scanner.close();
+        phoneNumber = scanner.nextLine();
     }
     // sign in method
     private void signIn () {
@@ -106,6 +119,7 @@ public class Client {
             ObjectOutputStream outf = new ObjectOutputStream(fout);
             data.add(friendsList);
             data.add(privateChats);
+            data.add(groups);
             outf.writeObject(data);
             fout.close();
             outf.close();
@@ -170,6 +184,7 @@ public class Client {
             data = (ArrayList<Object>) inf.readObject();
             friendsList = (HashMap<String, Boolean>) data.get(0);
             privateChats = (HashMap<String, ArrayList<String>>) data.get(1);
+            groups = (HashMap<Integer, Boolean>) data.get(2);
 
             // Listener
             Thread thread = new Thread(new Listener(in,socket));
@@ -180,7 +195,6 @@ public class Client {
                 String text = "";
                 if (scanner.hasNextLine()) {
                     text = scanner.nextLine();
-                        
                 }
                 try {
                     if (text.charAt(0) == '/') {
@@ -242,29 +256,68 @@ public class Client {
                                 System.out.println(ANSI_RED + "you have no friends!" + ANSI_RESET);
                             }
                         }
-                        if (text.split(" ")[0].equals("/chat") && text.split(" ").length == 2) {
-                            if (friendsList.containsKey(text.split(" ")[1])) {// && !privateChatUser.equals(text.split(" ")[1])
-                                isPrivateChat = true;
-                                privateChatUser = text.split(" ")[1];
-                                if (privateChats.containsKey(text.split(" ")[1])) {
-                                    ArrayList<String> chats = privateChats.get(text.split(" ")[1]);
-                                    for (String chat : chats) {
-                                        System.out.println(chat);
+                        if (text.split(" ")[0].equals("/server") && text.split(" ").length == 2) {
+                            out.writeObject(new Message(username,text.split(" ")[1],"/server"));
+                        }
+                        if (!isGroup) {
+                            if (text.split(" ")[0].equals("/chat") && text.split(" ").length == 2) {
+                                if (friendsList.containsKey(text.split(" ")[1])) {// && !privateChatUser.equals(text.split(" ")[1])
+                                    isPrivateChat = true;
+                                    privateChatUser = text.split(" ")[1];
+                                    if (privateChats.containsKey(text.split(" ")[1])) {
+                                        ArrayList<String> chats = privateChats.get(text.split(" ")[1]);
+                                        for (String chat : chats) {
+                                            System.out.println(chat);
+                                        }
                                     }
+                                    else {
+                                        privateChats.put(text.split(" ")[1],new ArrayList<>());
+                                        saving();
+                                    }
+                                    out.writeObject(new Message(username,text.split(" ")[1],"/chat"));
                                 }
                                 else {
-                                    privateChats.put(text.split(" ")[1],new ArrayList<>());
-                                    saving();
+                                    System.out.println(ANSI_RED + "you have no friend with this username" + ANSI_RESET);
                                 }
-                                out.writeObject(new Message(username,text.split(" ")[1],"/chat"));
                             }
-                            else {
-                                System.out.println(ANSI_RED + "you have no friend with this username" + ANSI_RESET);
+                            if (text.split(" ")[0].equals("/chatoff") && text.split(" ").length == 1) {
+                                isPrivateChat = false;
+                                privateChatUser = "";
+                            }
+                            if (text.split(" ")[0].equals("/newserver") && text.split(" ").length == 1) {
+                                Group group = new Group(username);
+                                group.changeName();
+                                isGroup = true;
+                                saving();
+                                out.writeObject(new Message(username,group.getName(),"/newserver"));
                             }
                         }
-                        if (text.split(" ")[0].equals("/chatoff") && text.split(" ").length == 1) {
-                            isPrivateChat = false;
-                            privateChatUser = "";
+                        if (isGroup) {
+                            if (text.split(" ")[0].equals("/exitserver") && text.split(" ").length == 1) {
+                                System.out.println(ANSI_BLUE + "exit the server successfully" + ANSI_RESET);
+                                isGroup = false;
+                                theGroup = -1;
+                            }
+                            if (text.split(" ")[0].equals("/changeservername") && text.split(" ").length == 1) {
+                                Group group = new Group(username);
+                                group.changeName();
+                                saving();
+                                out.writeObject(new Message(String.valueOf(theGroup),group.getName(),"/changeservername"));
+                            }
+                            if (text.split(" ")[0].equals("/addmember") && text.split(" ").length == 2) {
+                                if (friendsList.containsKey(text.split(" ")[1])) {
+                                    out.writeObject(new Message(username,theGroup + "-" + text.split(" ")[1],"/addmember"));
+                                }
+                                else {
+                                    System.out.println(ANSI_RED + "you have no friend with this username" + ANSI_RESET);
+                                }
+                            }
+                            if (text.split(" ")[0].equals("/removemember") && text.split(" ").length == 2) {
+                                out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/removemember"));
+                            }
+                            if (text.split(" ")[0].equals("/status") && text.split(" ").length == 2) {
+                                out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/status"));
+                            }
                         }
                     }
                     else {
@@ -284,6 +337,7 @@ public class Client {
         }
         catch (IOException | ClassNotFoundException e) {
             if (connection) {
+                e.printStackTrace();
                 System.out.println(ANSI_RED + "Server is down" + ANSI_RESET);
             }
         }
@@ -303,6 +357,7 @@ public class Client {
             while (connection) {
                 try {
                     Message message = (Message) in.readObject();
+
                     if (message.getType().equals("error")) {
                         System.out.println(ANSI_RED + message.getText() + ANSI_RESET);
                     }
@@ -330,6 +385,24 @@ public class Client {
                         if (privateChatUser.equals(message.getOwner())) {
                             System.out.println(message.getOwner() + ": " + message.getText());
                         }
+                    }
+                    if (message.getType().equals("/newserver")) {
+                        theGroup = Integer.parseInt(message.getText());
+                        groups.put(Integer.parseInt(message.getText()),true);
+                    }
+                    if (message.getType().equals("groupjoin")) {
+                        Group group = (Group) in.readObject();
+                        groups.put(group.getId(),true);
+                        System.out.println(ANSI_BLUE + "you have been added to the " + group.getName() + " server. WELCOME!" + ANSI_RESET);
+                    }
+                    if (message.getType().equals("groupremove")) {
+                        ArrayList<Integer> groups1 = new ArrayList<Integer>(groups.keySet());
+                        groups.remove(groups1.indexOf(Integer.parseInt(message.getText())));
+                        System.out.println(ANSI_RED + "you have been removed from the " + message.getOwner() +" server" + ANSI_RESET);
+                    }
+                    if (message.getType().equals("/server")) {
+                        isGroup = true;
+                        theGroup = Integer.parseInt(message.getText());
                     }
                 }
                 catch (IOException e) {
