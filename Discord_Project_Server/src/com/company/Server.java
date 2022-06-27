@@ -129,6 +129,7 @@ public class Server implements Serializable{
         private transient ObjectInput in;
         private transient ObjectOutput out;
         private String username;
+
         // constructor
         public ClientHandler(Socket socket) {
             try {
@@ -265,6 +266,7 @@ public class Server implements Serializable{
                         Group group = groups.get(Integer.parseInt(message.getText().split("-")[0]));
                         if (group.isMember(message.getText().split("-")[1])) {
                             group.removeMember(message.getText().split("-")[1]);
+                            saving();
                             sendTo(message.getText().split("-")[1],new Message(group.getName(),String.valueOf(group.getId()),"groupremove"),"groupremove");
                         }
                         else {
@@ -300,6 +302,38 @@ public class Server implements Serializable{
                         }
                         if (!bool) {
                             sendToClient(new Message("server","you have no such server!","error"),"error");
+                        }
+                    }
+                    if (message.getType().equals("/newchannel")) {
+                        Group group = groups.get(Integer.parseInt(message.getText().split("-")[0]));
+                        int channelId = group.newChannel(message.getText().split("-")[1]);
+                        saving();
+                        sendToClient(new Message("server",String.valueOf(channelId),"/newchannel"),"/newchannel");
+                    }
+                    if (message.getType().equals("/channel")) {
+                        Group group = groups.get(Integer.parseInt(message.getText().split("-")[0]));
+                        if (group.isChannel(message.getText().split("-")[1])) {
+                            int channelID = group.channelID(message.getText().split("-")[1]);
+                            sendToClient(new Message("server",String.valueOf(channelID),"/channel"),"/channel");
+                            Channel channel = group.channel(channelID);
+                            ArrayList<String> chats = channel.getChats();
+                            ArrayList<String> chatsUser = channel.getChatsUser();
+                            for (int i=0 ; i<chats.size() ; i++) {
+                                sendToClient(new Message(chatsUser.get(i),chats.get(i),"channelchats"),"channelchats");
+                            }
+                        }
+                        else {
+                            sendToClient(new Message("server","there is no such channel in this server!","error"),"error");
+                        }
+                    }
+                    if ((message.getType().split("-")[0].equals("chatroom"))) {
+                        Group group = groups.get(Integer.parseInt(message.getType().split("-")[1]));
+                        group.addChat(Integer.parseInt(message.getType().split("-")[2]),message.getOwner(),message.getText());
+                        Channel channel = group.channel(Integer.parseInt(message.getType().split("-")[2]));
+                        ArrayList<String> groupMembers = group.getMembers();
+                        saving();
+                        for (String member : groupMembers) {
+                            sendTo(member,new Message(message.getOwner(),message.getText(),"chatroom-" + group.getId() + "-" + channel.getId()),"chatroom");
                         }
                     }
 

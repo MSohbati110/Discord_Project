@@ -15,6 +15,8 @@ public class Group implements Serializable {
     private String name;
     private String owner;
     private ArrayList<String> members = new ArrayList<>();
+    private HashMap<Integer,Channel> channels = new HashMap<>();
+    private int channelId = 0;
 
     // constructor
     public Group(String owner) {
@@ -28,6 +30,14 @@ public class Group implements Serializable {
     public int getId() {
         return id;
     }
+    public ArrayList<String> getMembers() {
+        return members;
+    }
+
+    public HashMap<Integer,Channel> getChannels() {
+        return channels;
+    }
+
     // setter
     public void setName(String name) {
         this.name = name;
@@ -35,6 +45,7 @@ public class Group implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
+
     // changing the name of the server
     public void changeName() {
         Scanner scanner = new Scanner(System.in);
@@ -57,11 +68,44 @@ public class Group implements Serializable {
         }
         return false;
     }
-    // show members
-    public void show () {
-        for (String name : members) {
-            System.out.print(name + "  ,  ");
+    // check if that channel exists or not
+    public boolean isChannel (String name) {
+        for (Channel channel : channels.values()) {
+            if (channel.getName().equals(name)) {
+                return true;
+            }
         }
-        System.out.println();
+        return false;
+    }
+    // making a new channel
+    public int newChannel (String name) {
+        Channel channel = new Channel();
+        channel.setName(name);
+        channel.setId(channelId);
+        channels.put(channelId,channel);
+        channelId++;
+        return channelId-1;
+    }
+    // returning a channel id
+    public int channelID (String name) {
+        for (Channel channel : channels.values()) {
+            if (channel.getName().equals(name)) {
+                return channel.getId();
+            }
+        }
+        return -1;
+    }
+    // return a channel
+    public Channel channel (int id) {
+        for (Channel channel1 : channels.values()) {
+            if (channel1.getId() == id) {
+                return channel1;
+            }
+        }
+        return null;
+    }
+    // adding a chat to a channel
+    public void addChat (int channelId, String username, String chat) {
+        channels.get(channelId).addChat(username,chat);
     }
 }

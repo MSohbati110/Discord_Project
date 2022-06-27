@@ -2,6 +2,7 @@ package com.company;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ public class Client {
     private static final String ANSI_BLUE = "\u001B[34m";
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_YELLOW = "\u001B[33m";
+    private static final String ANSI_GREEN = "\u001B[32m";
     private String ip = "127.0.0.1";
     private int port = 6000;
     private boolean connection = true;
@@ -29,6 +31,8 @@ public class Client {
     private HashMap<Integer,Boolean> groups = new HashMap<>();
     private boolean isGroup = false;
     private int theGroup = -1;
+    private boolean isChannel = false;
+    private int theChannel = -1;
     private ArrayList<Object> data = new ArrayList<>();
 
     // sign up method
@@ -318,6 +322,21 @@ public class Client {
                             if (text.split(" ")[0].equals("/status") && text.split(" ").length == 2) {
                                 out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/status"));
                             }
+                            if (text.split(" ")[0].equals("/newchannel") && text.split(" ").length == 1) {
+                                Channel channel = new Channel();
+                                channel.changeName();
+                                out.writeObject(new Message(username,theGroup + "-" + channel.getName(),"/newchannel"));
+                            }
+                            if (text.split(" ")[0].equals("/channel") && text.split(" ").length == 2) {
+                                out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/channel"));
+                            }
+                            if (isChannel) {
+                                if (text.split(" ")[0].equals("/exitchannel") && text.split(" ").length == 1) {
+                                    isChannel = false;
+                                    theChannel = -1;
+                                    System.out.println(ANSI_BLUE + "exit the channel successfully" + ANSI_RESET);
+                                }
+                            }
                         }
                     }
                     else {
@@ -326,6 +345,9 @@ public class Client {
                             chats.add("me: " + text);
                             saving();
                             out.writeObject(new Message(username,text,"pchat-"+privateChatUser));
+                        }
+                        if (isChannel) {
+                            out.writeObject(new Message(username,text,"chatroom-" + theGroup + "-" + theChannel));
                         }
                     }
                 }
@@ -337,7 +359,6 @@ public class Client {
         }
         catch (IOException | ClassNotFoundException e) {
             if (connection) {
-                e.printStackTrace();
                 System.out.println(ANSI_RED + "Server is down" + ANSI_RESET);
             }
         }
@@ -404,6 +425,32 @@ public class Client {
                         isGroup = true;
                         theGroup = Integer.parseInt(message.getText());
                     }
+                    if (message.getType().equals("/newchannel")) {
+                        isChannel = true;
+                        theChannel = Integer.parseInt(message.getText());
+                    }
+                    if (message.getType().equals("/channel")) {
+                        isChannel = true;
+                        theChannel = Integer.parseInt(message.getText());
+                    }
+                    if (message.getType().split("-")[0].equals("chatroom")) {
+                        if (isGroup && theGroup == Integer.parseInt(message.getType().split("-")[1])) {
+                            if (isChannel && theChannel == Integer.parseInt(message.getType().split("-")[2])) {
+                                if (!username.equals(message.getOwner())) {
+                                    System.out.println("[" + message.getOwner() + "] : " + message.getText());
+                                }
+                            }
+                        }
+                    }
+                    if (message.getType().equals("channelchats")) {
+                        if (!username.equals(message.getOwner())) {
+                            System.out.println("[" + message.getOwner() + "] : " + message.getText());
+                        }
+                        else {
+                            System.out.println(ANSI_GREEN + "[" + message.getOwner() + "] : " + message.getText() + ANSI_RESET);
+                        }
+                    }
+
                 }
                 catch (IOException e) {
                     if (connection) {
