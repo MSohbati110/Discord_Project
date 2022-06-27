@@ -14,6 +14,8 @@ public class Server implements Serializable{
     private HashMap<String,Boolean> online = new HashMap<>();
     private HashMap<String[],Boolean> friendRequest = new HashMap<>();
     private HashMap<String[],Boolean> friendAccept = new HashMap<>();
+
+    private HashMap<String, String> usersStatus = new HashMap<>();
     private HashMap<ArrayList<String>,ArrayList<String>> privateChats = new HashMap<>();
     private ArrayList<Group> groups = new ArrayList<>();
     private int groupId = 0;
@@ -237,6 +239,9 @@ public class Server implements Serializable{
                     }
                     if (message.getType().equals("/friendaccept")) {
                         sendTo(message.getText(), new Message(message.getOwner(), "", "/friendaccept"), "/friendaccept");
+                    }
+                    if (message.getType().equals("/setstatus")) {
+                        usersStatus.put(message.getOwner(), message.getText());
                     }
                     if (message.getType().equals("/chat")) {
                         sendTo(message.getText(), new Message(message.getOwner(), "", "/chat"), "/chat");

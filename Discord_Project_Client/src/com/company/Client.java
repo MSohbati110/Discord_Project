@@ -23,8 +23,12 @@ public class Client {
     private String passWord = "";
     private String email = "";
     private String phoneNumber = "";
+
+    private String status = "";
     private boolean sign = true;
     private HashMap<String,Boolean> friendsList = new HashMap<>();
+
+    private  HashMap<String, String> friendsStatus = new HashMap<>();
     private HashMap<String, ArrayList<String>> privateChats = new HashMap<>();
     private boolean isPrivateChat = false;
     private String privateChatUser = "";
@@ -263,6 +267,41 @@ public class Client {
                         if (text.split(" ")[0].equals("/server") && text.split(" ").length == 2) {
                             out.writeObject(new Message(username,text.split(" ")[1],"/server"));
                         }
+                        if (text.split(" ")[0].equals("/setstatus") && text.split("").length == 2){
+                            System.out.println(ANSI_YELLOW + "Set your status : \n1. Online \n2. Idle \n3. Do Not Distrub \n4. Invisible \n-1. None" + ANSI_RESET);
+                            boolean condition = true;
+                            while (condition) {
+                                status = scanner.nextLine();
+                                switch (status) {
+                                    case "1":
+                                        status = "Online";
+                                        condition = false;
+                                        break;
+                                    case "2":
+                                        status = "Idle";
+                                        condition = false;
+                                        break;
+                                    case "3":
+                                        status = "Do Not Disturb";
+                                        condition = false;
+                                        break;
+                                    case "4":
+                                        status = "Invisible";
+                                        condition = false;
+                                        break;
+                                    case "-1":
+                                        status = "";
+                                        condition = false;
+                                        break;
+                                    default:
+                                        System.out.println(ANSI_RED + "Wrong input" + ANSI_RESET);
+                                        break;
+                                }
+                            }
+                            if (!status.equals("")){
+                                out.writeObject(new Message(username, text.split(" ")[1], "/setstatus"));
+                            }
+                        }
                         if (!isGroup) {
                             if (text.split(" ")[0].equals("/chat") && text.split(" ").length == 2) {
                                 if (friendsList.containsKey(text.split(" ")[1])) {// && !privateChatUser.equals(text.split(" ")[1])
@@ -392,6 +431,9 @@ public class Client {
                     if (message.getType().equals("/friendaccept")) {
                         friendsList.put(message.getOwner(),true);
                         saving();
+                    }
+                    if (message.getType().equals("/friendstatus")) {
+                        friendsStatus.put(message.getOwner(), message.getText());
                     }
                     if (message.getType().equals("/chat")) {
                         if (!privateChats.containsKey(message.getOwner())) {
