@@ -38,6 +38,7 @@ public class Server implements Serializable{
             groups = (ArrayList<Group>) data.get(5);
             groupJoins = (HashMap<String, Group>) data.get(6);
             groupRemoves = (HashMap<String, Message>) data.get(7);
+            usersStatus = (HashMap<String, String>) data.get(8);
             ServerSocket serverSocket = new ServerSocket(port);
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -117,6 +118,7 @@ public class Server implements Serializable{
             data.add(groups);
             data.add(groupJoins);
             data.add(groupRemoves);
+            data.add(usersStatus);
             outf.writeObject(data);
             fout.close();
             outf.close();
@@ -242,6 +244,7 @@ public class Server implements Serializable{
                     }
                     if (message.getType().equals("/setstatus")) {
                         usersStatus.put(message.getOwner(), message.getText());
+                        saving();
                     }
                     if (message.getType().equals("/chat")) {
                         sendTo(message.getText(), new Message(message.getOwner(), "", "/chat"), "/chat");

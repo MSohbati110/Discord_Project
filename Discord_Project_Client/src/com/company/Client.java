@@ -128,6 +128,7 @@ public class Client {
             data.add(friendsList);
             data.add(privateChats);
             data.add(groups);
+            data.add(friendsStatus);
             outf.writeObject(data);
             fout.close();
             outf.close();
@@ -193,6 +194,7 @@ public class Client {
             friendsList = (HashMap<String, Boolean>) data.get(0);
             privateChats = (HashMap<String, ArrayList<String>>) data.get(1);
             groups = (HashMap<Integer, Boolean>) data.get(2);
+            friendsStatus = (HashMap<String, String>) data.get(3);
 
             // Listener
             Thread thread = new Thread(new Listener(in,socket));
@@ -434,6 +436,7 @@ public class Client {
                     }
                     if (message.getType().equals("/friendstatus")) {
                         friendsStatus.put(message.getOwner(), message.getText());
+                        saving();
                     }
                     if (message.getType().equals("/chat")) {
                         if (!privateChats.containsKey(message.getOwner())) {
