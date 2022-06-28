@@ -117,4 +117,13 @@ public class Group implements Serializable {
     public String getPinedMessages (int channelId){
         return channels.get(channelId).getPinMessages();
     }
+
+    //react to a message
+    public void reaction (int channelId, Integer index, Integer react){
+        channels.get(channelId).reaction(react, index);
+    }
+
+    public String getReactions (int channelId, Integer index){
+        return channels.get(channelId).getReactions(index);
+    }
 }

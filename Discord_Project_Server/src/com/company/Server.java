@@ -14,7 +14,6 @@ public class Server implements Serializable{
     private HashMap<String,Boolean> online = new HashMap<>();
     private HashMap<String[],Boolean> friendRequest = new HashMap<>();
     private HashMap<String[],Boolean> friendAccept = new HashMap<>();
-
     private HashMap<String, String> usersStatus = new HashMap<>();
     private HashMap<ArrayList<String>,ArrayList<String>> privateChats = new HashMap<>();
     private ArrayList<Group> groups = new ArrayList<>();
@@ -340,7 +339,18 @@ public class Server implements Serializable{
                     }
                     if (message.getType().equals("/showpins")){
                         Group group = groups.get(Integer.parseInt(message.getText().split(" ")[0]));
-                        sendToClient(new Message("server", group.getPinedMessages(Integer.parseInt(message.getText().split(" ")[1])), "/showpins"), "/showpins");
+                        String pinedMessages = group.getPinedMessages(Integer.parseInt(message.getText().split(" ")[1]));
+                        sendToClient(new Message("server", pinedMessages, "/showpins"), "/showpins");
+                    }
+                    if (message.getType().equals("/react")){
+                        Group group = groups.get(Integer.parseInt(message.getText().split(" ")[0]));
+                        group.reaction(Integer.parseInt(message.getText().split(" ")[1]),
+                                Integer.parseInt(message.getText().split(" ")[3]), Integer.parseInt(message.getText().split(" ")[2]));
+                    }
+                    if (message.getType().equals("/showreacts")){
+                        Group group = groups.get(Integer.parseInt(message.getText().split(" ")[0]));
+                        String reacts = group.getReactions(Integer.parseInt(message.getText().split(" ")[1]), Integer.parseInt(message.getText().split(" ")[2]));
+                        sendToClient(new Message("server", reacts, "/showreacts"), "/showreacts");
                     }
                     if ((message.getType().split("-")[0].equals("chatroom"))) {
                         Group group = groups.get(Integer.parseInt(message.getType().split("-")[1]));

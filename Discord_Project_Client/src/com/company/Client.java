@@ -385,7 +385,7 @@ public class Client {
                                     out.writeObject(new Message(username, theGroup + " " + theChannel, "/showpins"));
                                 }
                                 if (text.split(" ")[0].equals("/react")){
-                                    int reaction = 0;
+                                    Integer reaction = 0;
                                     boolean condition = true;
                                     System.out.println(ANSI_YELLOW + "Choose your react(-1 for cancel):\n1.like\n2.unlike\n3.laugh");
                                     while (condition){
@@ -395,13 +395,18 @@ public class Client {
                                             case 2:
                                             case 3:
                                             case -1:
-
                                                 condition = false;
                                                 break;
                                             default:
                                                 System.out.println(ANSI_RED + "wrong input" + ANSI_RESET);
                                         }
                                     }
+                                    if (reaction != -1){
+                                        out.writeObject(new Message(username, theGroup + " " + theChannel + " " + reaction + " " + text.split(" ")[1], "/react"));
+                                    }
+                                }
+                                if (text.split(" ")[0].equals("/showreacts")){
+                                    out.writeObject(new Message(username, theGroup + " " + theChannel + " " + text.split(" ")[1], "/showreacts"));
                                 }
                             }
                         }
@@ -524,7 +529,9 @@ public class Client {
                     if (message.getType().equals("/showpins")){
                         System.out.println(message.getText());
                     }
-
+                    if (message.getType().equals("/showreacts")){
+                        System.out.println(message.getText());
+                    }
                 }
                 catch (IOException e) {
                     if (connection) {
