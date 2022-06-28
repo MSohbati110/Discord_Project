@@ -27,7 +27,6 @@ public class Client {
     private String status = "";
     private boolean sign = true;
     private HashMap<String,Boolean> friendsList = new HashMap<>();
-
     private  HashMap<String, String> friendsStatus = new HashMap<>();
     private HashMap<String, ArrayList<String>> privateChats = new HashMap<>();
     private boolean isPrivateChat = false;
@@ -258,7 +257,8 @@ public class Client {
                             int counter = 1;
                             for (String friend : friendsList.keySet()) {
                                 if (friendsList.get(friend)) {
-                                    System.out.println(ANSI_YELLOW + counter + "- " + friend + ANSI_RESET);
+
+                                    System.out.println(ANSI_YELLOW + counter + "- " + friend + " - Status : " + friendsStatus.get(friend) + ANSI_RESET);
                                     counter++;
                                 }
                             }
@@ -377,6 +377,32 @@ public class Client {
                                     theChannel = -1;
                                     System.out.println(ANSI_BLUE + "exit the channel successfully" + ANSI_RESET);
                                 }
+                                if (text.split(" ")[0].equals("/pin")){
+                                    out.writeObject(new Message(username, text.split(" ")[1] + " " + theGroup + " " + theChannel, "/pin"));
+                                    System.out.println(ANSI_BLUE + "you pined message" + ANSI_RESET);
+                                }
+                                if (text.split(" ")[0].equals("/showpins")){
+                                    out.writeObject(new Message(username, theGroup + " " + theChannel, "/showpins"));
+                                }
+                                if (text.split(" ")[0].equals("/react")){
+                                    int reaction = 0;
+                                    boolean condition = true;
+                                    System.out.println(ANSI_YELLOW + "Choose your react(-1 for cancel):\n1.like\n2.unlike\n3.laugh");
+                                    while (condition){
+                                        reaction = scanner.nextInt();
+                                        switch (reaction){
+                                            case 1:
+                                            case 2:
+                                            case 3:
+                                            case -1:
+
+                                                condition = false;
+                                                break;
+                                            default:
+                                                System.out.println(ANSI_RED + "wrong input" + ANSI_RESET);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -494,6 +520,9 @@ public class Client {
                         else {
                             System.out.println(ANSI_GREEN + "[" + message.getOwner() + "] : " + message.getText() + ANSI_RESET);
                         }
+                    }
+                    if (message.getType().equals("/showpins")){
+                        System.out.println(message.getText());
                     }
 
                 }

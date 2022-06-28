@@ -327,12 +327,20 @@ public class Server implements Serializable{
                             ArrayList<String> chats = channel.getChats();
                             ArrayList<String> chatsUser = channel.getChatsUser();
                             for (int i=0 ; i<chats.size() ; i++) {
-                                sendToClient(new Message(chatsUser.get(i),chats.get(i),"channelchats"),"channelchats");
+                                sendToClient(new Message(chatsUser.get(i),i + chats.get(i),"channelchats"),"channelchats");
                             }
                         }
                         else {
                             sendToClient(new Message("server","there is no such channel in this server!","error"),"error");
                         }
+                    }
+                    if (message.getType().equals("/pin")){
+                        Group group = groups.get(Integer.parseInt(message.getText().split(" ")[1]));
+                        group.pinMessage(Integer.parseInt(message.getText().split(" ")[3]), Integer.parseInt(message.getText().split(" ")[0]));
+                    }
+                    if (message.getType().equals("/showpins")){
+                        Group group = groups.get(Integer.parseInt(message.getText().split(" ")[0]));
+                        sendToClient(new Message("server", group.getPinedMessages(Integer.parseInt(message.getText().split(" ")[1])), "/showpins"), "/showpins");
                     }
                     if ((message.getType().split("-")[0].equals("chatroom"))) {
                         Group group = groups.get(Integer.parseInt(message.getType().split("-")[1]));

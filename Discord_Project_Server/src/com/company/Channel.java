@@ -13,6 +13,8 @@ public class Channel implements Serializable {
     private int id;
     private String name;
     private ArrayList<String> chats = new ArrayList<>();
+
+    private  ArrayList<String> pinMessages = new ArrayList<>();
     private ArrayList<String> chatsUser = new ArrayList<>();
 
     // getter
@@ -29,14 +31,24 @@ public class Channel implements Serializable {
         return chatsUser;
     }
 
+    public String getPinMessages() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String pinMessage : pinMessages) {
+            stringBuilder.append(pinMessage);
+            stringBuilder.append("\n");
+        }
+
+        return  stringBuilder.toString();
+    }
+
     // setter
+
     public void setId(int id) {
         this.id = id;
     }
     public void setName(String name) {
         this.name = name;
     }
-
     // change the name of channel
     public void changeName () {
         Scanner scanner = new Scanner(System.in);
@@ -48,5 +60,9 @@ public class Channel implements Serializable {
     public void addChat (String username, String chat) {
         chats.add(chat);
         chatsUser.add(username);
+    }
+    // pin a message
+    public  void pinMessage (int index){
+        pinMessages.add(chats.get(index));
     }
 }
