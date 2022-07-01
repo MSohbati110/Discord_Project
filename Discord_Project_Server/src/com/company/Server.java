@@ -7,6 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/**
+ * The Server class is the Socket that other clients connect to it.
+ * Server class has to make connection between itself and clients by sending and receiving messages.
+ * Servers data will be saves after making new group, new user joins, etc.
+ * @author Mostafa Sohbati & Shahriar Mirnajafi
+ * @version 1.0
+ */
 public class Server implements Serializable{
     private final int port = 6000;
     private HashMap<String,ClientHandler> clients = new HashMap();
@@ -23,6 +30,12 @@ public class Server implements Serializable{
     private ArrayList<Object> data = new ArrayList<>();
 
     // starting the server
+
+    /**
+     * This method prepare a server socket, reads data if there is any previous data,
+     * and wait for clients to connect server. When this method called, server start working until
+     * you close server.
+     */
     public void startServer () {
         try {
             // reading info from file
@@ -45,11 +58,8 @@ public class Server implements Serializable{
                 thread.start();
             }
         }
-        catch (IOException e) {
+        catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-        }
-        catch (ClassNotFoundException e) {
-
         }
     }
     // sending a message to a specific client
@@ -105,6 +115,10 @@ public class Server implements Serializable{
         }
     }
     // saving data in file
+
+    /**
+     * Saves all servers data.
+     */
     public void saving () {
         try {
             FileOutputStream fout = new FileOutputStream("data.txt");
@@ -134,6 +148,11 @@ public class Server implements Serializable{
         private String username;
 
         // constructor
+
+        /**
+         * This is constructor of ClientHandler class.
+         * @param socket Socket
+         */
         public ClientHandler(Socket socket) {
             try {
                 this.socket = socket;
@@ -145,6 +164,12 @@ public class Server implements Serializable{
             }
         }
         // send a message to the client
+
+        /**
+         * Sends a message to client.
+         * @param message Message
+         * @param type String
+         */
         public synchronized void sendToClient (Message message, String type) {
             try {
                 out.writeObject(message);
@@ -179,6 +204,12 @@ public class Server implements Serializable{
                 }
             }
         }
+
+        /**
+         * Sends an order to a group.
+         * @param group Group
+         * @param type String
+         */
         public synchronized void gSendToClient (Group group, String type) {
             try {
                 out.writeObject(new Message("server","",type));
@@ -190,6 +221,12 @@ public class Server implements Serializable{
                 }
             }
         }
+
+        /**
+         * Make to ObjectStream for communicate with client, one for sending data,
+         * other for receiving data from client. data that received from client,
+         * will identify by its type and then process.
+         */
         @Override
         public void run() {
             try {

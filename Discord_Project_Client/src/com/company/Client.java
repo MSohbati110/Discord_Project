@@ -10,6 +10,12 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Client class has fields form saving client data and has method to
+ * connect clients to server. After each change in clients data, new data will save.
+ * @author Mostafa Sohbati & Shahriar Mirnajafi
+ * @version 1.0
+ */
 public class Client {
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_BLUE = "\u001B[34m";
@@ -137,6 +143,12 @@ public class Client {
         }
     }
     // starting the client
+
+    /**
+     * This method connect client to server and make to ObjectStream, one for
+     * sending and other for receiving data. If there is any previous data, they will
+     * read in here.
+     */
     public void startClient () {
         try {
             // joining the server
