@@ -22,6 +22,7 @@ public class Server implements Serializable{
     private HashMap<String[],Boolean> friendRequest = new HashMap<>();
     private HashMap<String[],Boolean> friendAccept = new HashMap<>();
     private HashMap<String, String> usersStatus = new HashMap<>();
+    private  HashMap<String, File> userProfiles = new HashMap<>();
     private HashMap<ArrayList<String>,ArrayList<String>> privateChats = new HashMap<>();
     private ArrayList<Group> groups = new ArrayList<>();
     private int groupId = 0;
@@ -51,6 +52,7 @@ public class Server implements Serializable{
             groupJoins = (HashMap<String, Group>) data.get(6);
             groupRemoves = (HashMap<String, Message>) data.get(7);
             usersStatus = (HashMap<String, String>) data.get(8);
+            userProfiles = (HashMap<String, File>) data.get(9);
             ServerSocket serverSocket = new ServerSocket(port);
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -167,6 +169,7 @@ public class Server implements Serializable{
             data.add(groupJoins);
             data.add(groupRemoves);
             data.add(usersStatus);
+            data.add(userProfiles);
             outf.writeObject(data);
             fout.close();
             outf.close();
@@ -441,6 +444,11 @@ public class Server implements Serializable{
                     if (message.getType().equals("/receivefile")){
                         sendToClient(new Message("server", message.getText(), "/receivefile"), "/receivefile");
                         sendFile(message.getText(), socket);
+                    }
+                    if (message.getType().equals("/profile")){
+                        receiveFile(message.getText(), socket);
+                        File file = new File(message.getText());
+                        userProfiles.put(message.getOwner(), file);
                     }
                 }
             }

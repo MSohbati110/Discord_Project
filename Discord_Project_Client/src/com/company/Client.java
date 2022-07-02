@@ -42,6 +42,7 @@ public class Client {
     private int theGroup = -1;
     private boolean isChannel = false;
     private int theChannel = -1;
+    private File profile = null;
     private ArrayList<Object> data = new ArrayList<>();
 
     // sign up method
@@ -126,11 +127,7 @@ public class Client {
         passWord = scanner.nextLine();
     }
     //send file to server
-    private void sendFile (Socket socket){
-        Scanner scanner = new Scanner(System.in);
-        String path;
-        System.out.println(ANSI_YELLOW + "Enter your file address :" + ANSI_RESET);
-        path = scanner.nextLine();
+    private void sendFile (Socket socket, String path){
         int bytes = 0;
         try {
             File file = new File(path);
@@ -174,6 +171,7 @@ public class Client {
             data.add(privateChats);
             data.add(groups);
             data.add(friendsStatus);
+            data.add(profile);
             outf.writeObject(data);
             fout.close();
             outf.close();
@@ -246,6 +244,7 @@ public class Client {
             privateChats = (HashMap<String, ArrayList<String>>) data.get(1);
             groups = (HashMap<Integer, Boolean>) data.get(2);
             friendsStatus = (HashMap<String, String>) data.get(3);
+            profile = (File) data.get(4);
 
             // Listener
             Thread thread = new Thread(new Listener(in,socket));
@@ -262,6 +261,14 @@ public class Client {
                         if (text.split(" ")[0].equals("/exit")) {
                             connection = false;
                             socket.close();
+                        }
+                        if (text.split(" ")[0].equals("/setprofile")){
+                            out.writeObject(new Message(username, "", "/profile"));
+                            String path;
+                            System.out.println(ANSI_YELLOW + "Enter your photo address :" + ANSI_RESET);
+                            path = scanner.nextLine();
+                            profile = new File(path);
+                            sendFile(socket, path);
                         }
                         if (text.split(" ")[0].equals("/friend") && text.split(" ").length == 2) {
                             if (!username.equals(text.split(" ")[1])) {
@@ -359,7 +366,10 @@ public class Client {
                         if (text.split(" ")[0].equals("/sendfile")){
                             String fileName = text.split(" ")[1];
                             out.writeObject(new Message(username, fileName, "/sendfile"));
-                            sendFile(socket);
+                            String path;
+                            System.out.println(ANSI_YELLOW + "Enter your file address :" + ANSI_RESET);
+                            path = scanner.nextLine();
+                            sendFile(socket, path);
                         }
                         if (text.split(" ")[0].equals("/receivefile")){
                             String fileName;
