@@ -125,6 +125,46 @@ public class Client {
         System.out.println(ANSI_YELLOW + "Enter your password : " + ANSI_RESET);
         passWord = scanner.nextLine();
     }
+    //send file to server
+    private void sendFile (Socket socket){
+        Scanner scanner = new Scanner(System.in);
+        String path;
+        System.out.println(ANSI_YELLOW + "Enter your file address :" + ANSI_RESET);
+        path = scanner.nextLine();
+        int bytes = 0;
+        try {
+            File file = new File(path);
+            FileInputStream fin = new FileInputStream(file);
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            dos.writeLong(file.length());
+            byte[] buffer = new byte[4 * 1024];
+            while ((bytes = fin.read(buffer)) != -1){
+                dos.write(buffer, 0, bytes);
+                dos.flush();
+            }
+            fin.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    //receive file from server
+    private void receiveFile (Socket socket, String fileName){
+        int bytes = 0;
+        try {
+            FileOutputStream fout = new FileOutputStream(fileName);
+            DataInputStream din = new DataInputStream(socket.getInputStream());
+            long size = din.readLong();
+            byte[] buffer = new byte[4 * 1024];
+            while (size > 0 && (bytes = din.read(buffer, 0, (int)Math.min(buffer.length, size))) != 0){
+                fout.write(buffer,0, bytes);
+                size -= bytes;
+            }
+            fout.close();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
     // saving data in file
     private void saving () {
         try {
@@ -315,6 +355,18 @@ public class Client {
                             if (!status.equals("")){
                                 out.writeObject(new Message(username, text.split(" ")[1], "/setstatus"));
                             }
+                        }
+                        if (text.split(" ")[0].equals("/sendfile")){
+                            String fileName = text.split(" ")[1];
+                            out.writeObject(new Message(username, fileName, "/sendfile"));
+                            sendFile(socket);
+                        }
+                        if (text.split(" ")[0].equals("/receivefile")){
+                            String fileName;
+                            System.out.println(ANSI_YELLOW + "Enter file name with its format(example: file.format): ");
+                            fileName = scanner.nextLine();
+
+                            out.writeObject(new Message(username, fileName, "/receivefile"));
                         }
                         if (!isGroup) {
                             if (text.split(" ")[0].equals("/chat") && text.split(" ").length == 2) {
@@ -543,6 +595,13 @@ public class Client {
                     }
                     if (message.getType().equals("/showreacts")){
                         System.out.println(message.getText());
+                    }
+                    if (message.getType().equals("/sendfile")){
+                        System.out.println(ANSI_BLUE + "File sent successfully" + ANSI_RESET);
+                    }
+                    if (message.getType().equals("/receivefile")){
+                        receiveFile(socket, message.getText());
+                        System.out.println(ANSI_YELLOW + "File received successfully" + ANSI_RESET);
                     }
                 }
                 catch (IOException e) {

@@ -114,6 +114,41 @@ public class Server implements Serializable{
             }
         }
     }
+    //receive file
+    private void receiveFile (String fileName, Socket clientSocket) {
+        int bytes = 0;
+        try {
+            FileOutputStream fout = new FileOutputStream(fileName);
+            DataInputStream din = new DataInputStream(clientSocket.getInputStream());
+            long size = din.readLong();
+            byte[] buffer = new byte[4 * 1024];
+            while (size > 0 && (bytes = din.read(buffer, 0, (int)Math.min(buffer.length, size))) != 0){
+                fout.write(buffer, 0, bytes);
+                size -= bytes;
+            }
+            fout.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    //send file
+    private void sendFile (String fileName, Socket clientSocket){
+        int bytes = 0;
+        try {
+            File file = new File(fileName);
+            FileInputStream fin = new FileInputStream(file);
+            DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
+            dos.writeLong(file.length());
+            byte[] buffer = new byte[4 * 1024];
+            while ((bytes = fin.read(buffer)) != -1){
+                dos.write(buffer, 0, bytes);
+                dos.flush();
+            }
+            fin.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     // saving data in file
 
     /**
@@ -399,7 +434,14 @@ public class Server implements Serializable{
                             sendTo(member,new Message(message.getOwner(),message.getText(),"chatroom-" + group.getId() + "-" + channel.getId()),"chatroom");
                         }
                     }
-
+                    if (message.getType().equals("/sendfile")){
+                        receiveFile(message.getText(), socket);
+                        sendToClient(new Message("server", "File received successfully", "/sendfile"), "/sendfile");
+                    }
+                    if (message.getType().equals("/receivefile")){
+                        sendToClient(new Message("server", message.getText(), "/receivefile"), "/receivefile");
+                        sendFile(message.getText(), socket);
+                    }
                 }
             }
             catch (ClassNotFoundException | IOException e) {
