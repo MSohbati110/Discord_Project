@@ -425,7 +425,7 @@ public class Server implements Serializable{
                     }
                     if (message.getType().equals("/pin")){
                         Group group = groups.get(Integer.parseInt(message.getText().split(" ")[1]));
-                        group.pinMessage(Integer.parseInt(message.getText().split(" ")[3]), Integer.parseInt(message.getText().split(" ")[0]));
+                        group.pinMessage(Integer.parseInt(message.getText().split(" ")[2]), Integer.parseInt(message.getText().split(" ")[0]));
                     }
                     if (message.getType().equals("/showpins")){
                         Group group = groups.get(Integer.parseInt(message.getText().split(" ")[0]));

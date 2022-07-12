@@ -463,14 +463,14 @@ public class Client {
                                     theChannel = -1;
                                     System.out.println(ANSI_BLUE + "exit the channel successfully" + ANSI_RESET);
                                 }
-                                else if (text.split(" ")[0].equals("/pin")){
+                                else if (text.split(" ")[0].equals("/pin") && text.split(" ").length == 2){
                                     out.writeObject(new Message(username, text.split(" ")[1] + " " + theGroup + " " + theChannel, "/pin"));
                                     System.out.println(ANSI_BLUE + "you pined message" + ANSI_RESET);
                                 }
                                 else if (text.split(" ")[0].equals("/showpins")){
                                     out.writeObject(new Message(username, theGroup + " " + theChannel, "/showpins"));
                                 }
-                                else if (text.split(" ")[0].equals("/react")){
+                                else if (text.split(" ")[0].equals("/react") && text.split(" ").length == 2){
                                     Integer reaction = 0;
                                     boolean condition = true;
                                     System.out.println(ANSI_YELLOW + "Choose your react(-1 for cancel):\n1.like\n2.unlike\n3.laugh");
@@ -488,10 +488,11 @@ public class Client {
                                         }
                                     }
                                     if (reaction != -1){
+                                        System.out.println(ANSI_YELLOW + "your react saved" + ANSI_RESET);
                                         out.writeObject(new Message(username, theGroup + " " + theChannel + " " + reaction + " " + text.split(" ")[1], "/react"));
                                     }
                                 }
-                                else if (text.split(" ")[0].equals("/showreacts")){
+                                else if (text.split(" ")[0].equals("/showreacts") && text.split(" ").length == 2){
                                     out.writeObject(new Message(username, theGroup + " " + theChannel + " " + text.split(" ")[1], "/showreacts"));
                                 }
                             }
