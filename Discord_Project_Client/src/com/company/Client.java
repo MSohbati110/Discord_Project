@@ -162,6 +162,32 @@ public class Client {
             e.printStackTrace();
         }
     }
+    //get status of friends
+    private void getFriendsStatus (ObjectOutputStream out) {
+        for (String friend : friendsList.keySet()) {
+            if (friendsList.get(friend)){
+                //friendsStatus.put(friend, null);
+                try {
+                    out.writeObject(new Message(username, friend, "/getstatus"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    private  void printFriendList () {
+        int counter = 1;
+        for (String friend : friendsList.keySet()) {
+            if (friendsList.get(friend)) {
+
+                System.out.println(ANSI_YELLOW + counter + "- " + friend + " - Status : " + friendsStatus.get(friend) + ANSI_RESET);
+                counter++;
+            }
+        }
+        if (counter == 1) {
+            System.out.println(ANSI_RED + "you have no friends!" + ANSI_RESET);
+        }
+    }
     // saving data in file
     private void saving () {
         try {
@@ -313,23 +339,8 @@ public class Client {
                             }
                         }
                         else if (text.split(" ")[0].equals("/friendlist") && text.split(" ").length == 1) {
-                            for (String friend : friendsList.keySet()) {
-                                if (friendsList.get(friend)){
-                                    friendsStatus.put(friend, null);
-                                    out.writeObject(new Message(username, friend, "/getstatus"));
-                                }
-                            }
-                            int counter = 1;
-                            for (String friend : friendsList.keySet()) {
-                                if (friendsList.get(friend)) {
-
-                                    System.out.println(ANSI_YELLOW + counter + "- " + friend + " - Status : " + friendsStatus.get(friend) + ANSI_RESET);
-                                    counter++;
-                                }
-                            }
-                            if (counter == 1) {
-                                System.out.println(ANSI_RED + "you have no friends!" + ANSI_RESET);
-                            }
+                            getFriendsStatus(out);
+                            printFriendList();
                         }
                         else if (text.split(" ")[0].equals("/server") && text.split(" ").length == 2) {
                             out.writeObject(new Message(username,text.split(" ")[1],"/server"));
@@ -349,7 +360,7 @@ public class Client {
                                         condition = false;
                                         break;
                                     case "3":
-                                        status = "Do Not Disturb";
+                                        status = "Do-Not-Disturb";
                                         condition = false;
                                         break;
                                     case "4":

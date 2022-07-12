@@ -412,7 +412,7 @@ public class Server implements Serializable{
                             ArrayList<String> chats = channel.getChats();
                             ArrayList<String> chatsUser = channel.getChatsUser();
                             for (int i=0 ; i<chats.size() ; i++) {
-                                sendToClient(new Message(chatsUser.get(i),i + chats.get(i),"channelchats"),"channelchats");
+                                sendToClient(new Message(chatsUser.get(i),chats.get(i) + "\nindex : " + i,"channelchats"),"channelchats");
                             }
                         }
                         else {
