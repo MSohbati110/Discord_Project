@@ -325,10 +325,14 @@ public class Server implements Serializable{
                         saving();
                     }
                     if (message.getType().equals("/getstatus")){
-                        if (online.get(message.getText())){
-                            sendToClient(new Message("server", message.getText() + " " + usersStatus.get(message.getText()), "/getstatus"), "/getstatus");
+                        if (online.get(message.getText()) != null){
+                            if (usersStatus.get(message.getText()) != null){
+                                sendToClient(new Message("server", message.getText() + " " + usersStatus.get(message.getText()), "/getstatus"), "/getstatus");
+                            } else {
+                                sendToClient(new Message("server", message.getText() + " " + "online", "/getstatus"), "/getstatus");
+                            }
                         } else {
-                            sendToClient(new Message("server", message.getText() + " offline", "/getstatus"), "/getstatus");
+                            sendToClient(new Message("server", message.getText() + " " + "offline", "/getstatus"), "/getstatus");
                         }
                     }
                     if (message.getType().equals("/chat")) {

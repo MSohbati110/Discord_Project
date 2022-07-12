@@ -368,7 +368,7 @@ public class Client {
                                         condition = false;
                                         break;
                                     case "-1":
-                                        status = "";
+                                        status = "None";
                                         condition = false;
                                         break;
                                     default:
@@ -376,16 +376,11 @@ public class Client {
                                         break;
                                 }
                             }
-                            if (!status.equals("")){
-                                out.writeObject(new Message(username, status, "/setstatus"));
-                            }
+                            out.writeObject(new Message(username, status, "/setstatus"));
                         }
                         else if (text.split(" ")[0].equals("/sendfile")){
                             String fileName = text.split(" ")[1];
                             out.writeObject(new Message(username, fileName, "/sendfile"));
-                            String path;
-                            //System.out.println(ANSI_YELLOW + "Enter your file address :" + ANSI_RESET);
-                            //path = scanner.nextLine();
                             sendFile(socket, fileName);
                         }
                         else if (text.split(" ")[0].equals("/receivefile")){
@@ -559,6 +554,7 @@ public class Client {
                     else if (message.getType().equals("/getstatus")) {
                         friendsStatus.put(message.getText().split(" ")[0], message.getText().split(" ")[1]);
                         saving();
+                        friendsStatus = (HashMap<String, String>) data.get(3);
                     }
                     else if (message.getType().equals("/chat")) {
                         if (!privateChats.containsKey(message.getOwner())) {
