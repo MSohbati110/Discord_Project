@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Scanner;
 
 /**
  * The Server class is the Socket that other clients connect to it.
@@ -29,7 +30,6 @@ public class Server implements Serializable{
     private HashMap<String,Group> groupJoins = new HashMap<>();
     private HashMap<String,Message> groupRemoves = new HashMap<>();
     private ArrayList<Object> data = new ArrayList<>();
-
     // starting the server
 
     /**
@@ -58,6 +58,7 @@ public class Server implements Serializable{
                 Socket socket = serverSocket.accept();
                 Thread thread = new Thread(new ClientHandler(socket));
                 thread.start();
+                //System.out.println(socket.getLocalAddress() + " connected");
             }
         }
         catch (IOException | ClassNotFoundException e) {
@@ -287,6 +288,7 @@ public class Server implements Serializable{
                             clients.put(username, this);
                             users.put(username, inputs);
                             online.put(username,true);
+                            //System.out.println(username + " signed up.");
                             saving();
                         }
                     }
@@ -302,6 +304,7 @@ public class Server implements Serializable{
                                 offlineRequests(username, this);
                                 clients.replace(username, this);
                                 online.put(username,true);
+                                //System.out.println(username + " signed in.");
                             }
                         }
                     }
@@ -318,7 +321,15 @@ public class Server implements Serializable{
                     }
                     if (message.getType().equals("/setstatus")) {
                         usersStatus.put(message.getOwner(), message.getText());
+                        sendToClient(new Message("server", "status set successfully", "/setstatus"), "/setstatus");
                         saving();
+                    }
+                    if (message.getType().equals("/getstatus")){
+                        if (online.get(message.getText())){
+                            sendToClient(new Message("server", message.getText() + " " + usersStatus.get(message.getText()), "/getstatus"), "/getstatus");
+                        } else {
+                            sendToClient(new Message("server", message.getText() + " offline", "/getstatus"), "/getstatus");
+                        }
                     }
                     if (message.getType().equals("/chat")) {
                         sendTo(message.getText(), new Message(message.getOwner(), "", "/chat"), "/chat");

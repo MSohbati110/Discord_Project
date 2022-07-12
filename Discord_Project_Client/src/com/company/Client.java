@@ -262,7 +262,7 @@ public class Client {
                             connection = false;
                             socket.close();
                         }
-                        if (text.split(" ")[0].equals("/setprofile")){
+                        else if (text.split(" ")[0].equals("/setprofile")){
                             out.writeObject(new Message(username, "", "/profile"));
                             String path;
                             System.out.println(ANSI_YELLOW + "Enter your photo address :" + ANSI_RESET);
@@ -270,7 +270,7 @@ public class Client {
                             profile = new File(path);
                             sendFile(socket, path);
                         }
-                        if (text.split(" ")[0].equals("/friend") && text.split(" ").length == 2) {
+                        else if (text.split(" ")[0].equals("/friend") && text.split(" ").length == 2) {
                             if (!username.equals(text.split(" ")[1])) {
                                 out.writeObject(new Message(username,text.split(" ")[1],"/friend"));
                             }
@@ -278,7 +278,7 @@ public class Client {
                                 System.out.println(ANSI_RED + "No No No" + ANSI_RESET);
                             }
                         }
-                        if (text.split(" ")[0].equals("/friendrequest") && text.split(" ").length == 1) {
+                        else if (text.split(" ")[0].equals("/friendrequest") && text.split(" ").length == 1) {
                             int counter = 1;
                             for (String username : friendsList.keySet()) {
                                 if (friendsList.get(username).equals(false)) {
@@ -290,7 +290,7 @@ public class Client {
                                 System.out.println(ANSI_RED + "you have no friend request!" + ANSI_RESET);
                             }
                         }
-                        if (text.split(" ")[0].equals("/friendaccept") && text.split(" ").length == 2) {
+                        else if (text.split(" ")[0].equals("/friendaccept") && text.split(" ").length == 2) {
                             if (friendsList.containsKey(text.split(" ")[1]) && !friendsList.get(text.split(" ")[1])) {
                                 friendsList.replace(text.split(" ")[1],true);
                                 saving();
@@ -302,7 +302,7 @@ public class Client {
                                 System.out.println(ANSI_RED + "there is no friend request from this username" + ANSI_RESET);
                             }
                         }
-                        if (text.split(" ")[0].equals("/friendreject") && text.split(" ").length == 2) {
+                        else if (text.split(" ")[0].equals("/friendreject") && text.split(" ").length == 2) {
                             if (friendsList.containsKey(text.split(" ")[1]) && !friendsList.get(text.split(" ")[1])) {
                                 friendsList.remove(text.split(" ")[1]);
                                 saving();
@@ -312,7 +312,13 @@ public class Client {
                                 System.out.println(ANSI_RED + "there is no friend request from this username" + ANSI_RESET);
                             }
                         }
-                        if (text.split(" ")[0].equals("/friendlist") && text.split(" ").length == 1) {
+                        else if (text.split(" ")[0].equals("/friendlist") && text.split(" ").length == 1) {
+                            for (String friend : friendsList.keySet()) {
+                                if (friendsList.get(friend)){
+                                    friendsStatus.put(friend, null);
+                                    out.writeObject(new Message(username, friend, "/getstatus"));
+                                }
+                            }
                             int counter = 1;
                             for (String friend : friendsList.keySet()) {
                                 if (friendsList.get(friend)) {
@@ -325,10 +331,10 @@ public class Client {
                                 System.out.println(ANSI_RED + "you have no friends!" + ANSI_RESET);
                             }
                         }
-                        if (text.split(" ")[0].equals("/server") && text.split(" ").length == 2) {
+                        else if (text.split(" ")[0].equals("/server") && text.split(" ").length == 2) {
                             out.writeObject(new Message(username,text.split(" ")[1],"/server"));
                         }
-                        if (text.split(" ")[0].equals("/setstatus") && text.split("").length == 2){
+                        else if (text.split(" ")[0].equals("/setstatus")){
                             System.out.println(ANSI_YELLOW + "Set your status : \n1. Online \n2. Idle \n3. Do Not Distrub \n4. Invisible \n-1. None" + ANSI_RESET);
                             boolean condition = true;
                             while (condition) {
@@ -360,25 +366,25 @@ public class Client {
                                 }
                             }
                             if (!status.equals("")){
-                                out.writeObject(new Message(username, text.split(" ")[1], "/setstatus"));
+                                out.writeObject(new Message(username, status, "/setstatus"));
                             }
                         }
-                        if (text.split(" ")[0].equals("/sendfile")){
+                        else if (text.split(" ")[0].equals("/sendfile")){
                             String fileName = text.split(" ")[1];
                             out.writeObject(new Message(username, fileName, "/sendfile"));
                             String path;
-                            System.out.println(ANSI_YELLOW + "Enter your file address :" + ANSI_RESET);
-                            path = scanner.nextLine();
-                            sendFile(socket, path);
+                            //System.out.println(ANSI_YELLOW + "Enter your file address :" + ANSI_RESET);
+                            //path = scanner.nextLine();
+                            sendFile(socket, fileName);
                         }
-                        if (text.split(" ")[0].equals("/receivefile")){
+                        else if (text.split(" ")[0].equals("/receivefile")){
                             String fileName;
                             System.out.println(ANSI_YELLOW + "Enter file name with its format(example: file.format): ");
                             fileName = scanner.nextLine();
 
                             out.writeObject(new Message(username, fileName, "/receivefile"));
                         }
-                        if (!isGroup) {
+                        else if (!isGroup) {
                             if (text.split(" ")[0].equals("/chat") && text.split(" ").length == 2) {
                                 if (friendsList.containsKey(text.split(" ")[1])) {// && !privateChatUser.equals(text.split(" ")[1])
                                     isPrivateChat = true;
@@ -399,11 +405,11 @@ public class Client {
                                     System.out.println(ANSI_RED + "you have no friend with this username" + ANSI_RESET);
                                 }
                             }
-                            if (text.split(" ")[0].equals("/chatoff") && text.split(" ").length == 1) {
+                            else if (text.split(" ")[0].equals("/chatoff") && text.split(" ").length == 1) {
                                 isPrivateChat = false;
                                 privateChatUser = "";
                             }
-                            if (text.split(" ")[0].equals("/newserver") && text.split(" ").length == 1) {
+                            else if (text.split(" ")[0].equals("/newserver") && text.split(" ").length == 1) {
                                 Group group = new Group(username);
                                 group.changeName();
                                 isGroup = true;
@@ -411,19 +417,19 @@ public class Client {
                                 out.writeObject(new Message(username,group.getName(),"/newserver"));
                             }
                         }
-                        if (isGroup) {
+                        else if (isGroup) {
                             if (text.split(" ")[0].equals("/exitserver") && text.split(" ").length == 1) {
                                 System.out.println(ANSI_BLUE + "exit the server successfully" + ANSI_RESET);
                                 isGroup = false;
                                 theGroup = -1;
                             }
-                            if (text.split(" ")[0].equals("/changeservername") && text.split(" ").length == 1) {
+                            else if (text.split(" ")[0].equals("/changeservername") && text.split(" ").length == 1) {
                                 Group group = new Group(username);
                                 group.changeName();
                                 saving();
                                 out.writeObject(new Message(String.valueOf(theGroup),group.getName(),"/changeservername"));
                             }
-                            if (text.split(" ")[0].equals("/addmember") && text.split(" ").length == 2) {
+                            else if (text.split(" ")[0].equals("/addmember") && text.split(" ").length == 2) {
                                 if (friendsList.containsKey(text.split(" ")[1])) {
                                     out.writeObject(new Message(username,theGroup + "-" + text.split(" ")[1],"/addmember"));
                                 }
@@ -431,18 +437,18 @@ public class Client {
                                     System.out.println(ANSI_RED + "you have no friend with this username" + ANSI_RESET);
                                 }
                             }
-                            if (text.split(" ")[0].equals("/removemember") && text.split(" ").length == 2) {
+                            else if (text.split(" ")[0].equals("/removemember") && text.split(" ").length == 2) {
                                 out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/removemember"));
                             }
-                            if (text.split(" ")[0].equals("/status") && text.split(" ").length == 2) {
+                            else if (text.split(" ")[0].equals("/status") && text.split(" ").length == 2) {
                                 out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/status"));
                             }
-                            if (text.split(" ")[0].equals("/newchannel") && text.split(" ").length == 1) {
+                            else if (text.split(" ")[0].equals("/newchannel") && text.split(" ").length == 1) {
                                 Channel channel = new Channel();
                                 channel.changeName();
                                 out.writeObject(new Message(username,theGroup + "-" + channel.getName(),"/newchannel"));
                             }
-                            if (text.split(" ")[0].equals("/channel") && text.split(" ").length == 2) {
+                            else if (text.split(" ")[0].equals("/channel") && text.split(" ").length == 2) {
                                 out.writeObject(new Message(username, theGroup + "-" + text.split(" ")[1],"/channel"));
                             }
                             if (isChannel) {
@@ -451,14 +457,14 @@ public class Client {
                                     theChannel = -1;
                                     System.out.println(ANSI_BLUE + "exit the channel successfully" + ANSI_RESET);
                                 }
-                                if (text.split(" ")[0].equals("/pin")){
+                                else if (text.split(" ")[0].equals("/pin")){
                                     out.writeObject(new Message(username, text.split(" ")[1] + " " + theGroup + " " + theChannel, "/pin"));
                                     System.out.println(ANSI_BLUE + "you pined message" + ANSI_RESET);
                                 }
-                                if (text.split(" ")[0].equals("/showpins")){
+                                else if (text.split(" ")[0].equals("/showpins")){
                                     out.writeObject(new Message(username, theGroup + " " + theChannel, "/showpins"));
                                 }
-                                if (text.split(" ")[0].equals("/react")){
+                                else if (text.split(" ")[0].equals("/react")){
                                     Integer reaction = 0;
                                     boolean condition = true;
                                     System.out.println(ANSI_YELLOW + "Choose your react(-1 for cancel):\n1.like\n2.unlike\n3.laugh");
@@ -479,7 +485,7 @@ public class Client {
                                         out.writeObject(new Message(username, theGroup + " " + theChannel + " " + reaction + " " + text.split(" ")[1], "/react"));
                                     }
                                 }
-                                if (text.split(" ")[0].equals("/showreacts")){
+                                else if (text.split(" ")[0].equals("/showreacts")){
                                     out.writeObject(new Message(username, theGroup + " " + theChannel + " " + text.split(" ")[1], "/showreacts"));
                                 }
                             }
@@ -528,28 +534,28 @@ public class Client {
                     if (message.getType().equals("error")) {
                         System.out.println(ANSI_RED + message.getText() + ANSI_RESET);
                     }
-                    if (message.getType().equals("")) {
+                    else if (message.getType().equals("")) {
                         System.out.println(ANSI_BLUE + message.getText() + ANSI_RESET);
                     }
-                    if (message.getType().equals("/friend")) {
+                    else if (message.getType().equals("/friend")) {
                         friendsList.put(message.getOwner(),false);
                         saving();
                     }
-                    if (message.getType().equals("/friendaccept")) {
+                    else if (message.getType().equals("/friendaccept")) {
                         friendsList.put(message.getOwner(),true);
                         saving();
                     }
-                    if (message.getType().equals("/friendstatus")) {
-                        friendsStatus.put(message.getOwner(), message.getText());
+                    else if (message.getType().equals("/getstatus")) {
+                        friendsStatus.put(message.getText().split(" ")[0], message.getText().split(" ")[1]);
                         saving();
                     }
-                    if (message.getType().equals("/chat")) {
+                    else if (message.getType().equals("/chat")) {
                         if (!privateChats.containsKey(message.getOwner())) {
                             privateChats.put(message.getOwner(),new ArrayList<>());
                             saving();
                         }
                     }
-                    if (message.getType().equals("pchat")) {
+                    else if (message.getType().equals("pchat")) {
                         ArrayList<String> chats = privateChats.get(message.getOwner());
                         chats.add(message.getOwner() + ": " + message.getText());
                         saving();
@@ -557,33 +563,33 @@ public class Client {
                             System.out.println(message.getOwner() + ": " + message.getText());
                         }
                     }
-                    if (message.getType().equals("/newserver")) {
+                    else if (message.getType().equals("/newserver")) {
                         theGroup = Integer.parseInt(message.getText());
                         groups.put(Integer.parseInt(message.getText()),true);
                     }
-                    if (message.getType().equals("groupjoin")) {
+                    else if (message.getType().equals("groupjoin")) {
                         Group group = (Group) in.readObject();
                         groups.put(group.getId(),true);
                         System.out.println(ANSI_BLUE + "you have been added to the " + group.getName() + " server. WELCOME!" + ANSI_RESET);
                     }
-                    if (message.getType().equals("groupremove")) {
+                    else if (message.getType().equals("groupremove")) {
                         ArrayList<Integer> groups1 = new ArrayList<Integer>(groups.keySet());
                         groups.remove(groups1.indexOf(Integer.parseInt(message.getText())));
                         System.out.println(ANSI_RED + "you have been removed from the " + message.getOwner() +" server" + ANSI_RESET);
                     }
-                    if (message.getType().equals("/server")) {
+                    else if (message.getType().equals("/server")) {
                         isGroup = true;
                         theGroup = Integer.parseInt(message.getText());
                     }
-                    if (message.getType().equals("/newchannel")) {
+                    else if (message.getType().equals("/newchannel")) {
                         isChannel = true;
                         theChannel = Integer.parseInt(message.getText());
                     }
-                    if (message.getType().equals("/channel")) {
+                    else if (message.getType().equals("/channel")) {
                         isChannel = true;
                         theChannel = Integer.parseInt(message.getText());
                     }
-                    if (message.getType().split("-")[0].equals("chatroom")) {
+                    else if (message.getType().split("-")[0].equals("chatroom")) {
                         if (isGroup && theGroup == Integer.parseInt(message.getType().split("-")[1])) {
                             if (isChannel && theChannel == Integer.parseInt(message.getType().split("-")[2])) {
                                 if (!username.equals(message.getOwner())) {
@@ -592,7 +598,7 @@ public class Client {
                             }
                         }
                     }
-                    if (message.getType().equals("channelchats")) {
+                    else if (message.getType().equals("channelchats")) {
                         if (!username.equals(message.getOwner())) {
                             System.out.println("[" + message.getOwner() + "] : " + message.getText());
                         }
@@ -600,18 +606,21 @@ public class Client {
                             System.out.println(ANSI_GREEN + "[" + message.getOwner() + "] : " + message.getText() + ANSI_RESET);
                         }
                     }
-                    if (message.getType().equals("/showpins")){
+                    else if (message.getType().equals("/showpins")){
                         System.out.println(message.getText());
                     }
-                    if (message.getType().equals("/showreacts")){
+                    else if (message.getType().equals("/showreacts")){
                         System.out.println(message.getText());
                     }
-                    if (message.getType().equals("/sendfile")){
+                    else if (message.getType().equals("/sendfile")){
                         System.out.println(ANSI_BLUE + "File sent successfully" + ANSI_RESET);
                     }
-                    if (message.getType().equals("/receivefile")){
+                    else if (message.getType().equals("/receivefile")){
                         receiveFile(socket, message.getText());
-                        System.out.println(ANSI_YELLOW + "File received successfully" + ANSI_RESET);
+                        System.out.println(ANSI_BLUE + "File received successfully" + ANSI_RESET);
+                    }
+                    else if (message.getType().equals("/setstatus")){
+                        System.out.println(ANSI_BLUE + message.getText() + ANSI_RESET);
                     }
                 }
                 catch (IOException e) {
